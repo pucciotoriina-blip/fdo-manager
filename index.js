@@ -178,8 +178,8 @@ client.on('interactionCreate', async (interaction) => {
     
     if (action === 'stat') {
       const staffRole = getGuildEnv('STAFF_ROLE', interaction.guildId) || 'Staff LSPD';
-      if (!hasRole(interaction.member, staffRole)) {
-        return interaction.reply({ content: '❌ Solo lo staff può visualizzare le statistiche.', ephemeral: true });
+      if (interaction.user.id !== userId && !hasRole(interaction.member, staffRole)) {
+        return interaction.reply({ content: '❌ Non puoi usare i bottoni di altri agenti!', ephemeral: true });
       }
       const agente = await db.getAgente(userId);
       if (!agente) {
@@ -188,10 +188,11 @@ client.on('interactionCreate', async (interaction) => {
       
       const embed = {
         color: 0x0099ff,
-        title: `📊 Statistiche - ${agente.nome}`,
+        title: `📊 Stato servizio - ${agente.nome}`,
         fields: [
+          { name: 'Stato', value: agente.inServizio ? '🟢 In servizio' : '⚫ Fuori servizio', inline: true },
+          { name: 'Ore Cartellino', value: `${agente.oreServizio.toFixed(2)}h`, inline: true },
           { name: 'Ore Totali', value: `${agente.oreTotali.toFixed(2)}h`, inline: true },
-          { name: 'Stato', value: agente.inServizio ? '🟢 In Servizio' : '⚫ Fuori Servizio', inline: true },
           { name: 'PDA Emessi', value: `${agente.pdaEmessi}`, inline: true },
           { name: 'Arresti', value: `${agente.arresti}`, inline: true },
           { name: 'Multe', value: `${agente.multe}`, inline: true },
@@ -204,8 +205,8 @@ client.on('interactionCreate', async (interaction) => {
     
     if (action === 'info') {
       const staffRole = getGuildEnv('STAFF_ROLE', interaction.guildId) || 'Staff LSPD';
-      if (!hasRole(interaction.member, staffRole)) {
-        return interaction.reply({ content: '❌ Solo lo staff può visualizzare le info agente.', ephemeral: true });
+      if (interaction.user.id !== userId && !hasRole(interaction.member, staffRole)) {
+        return interaction.reply({ content: '❌ Non puoi usare i bottoni di altri agenti!', ephemeral: true });
       }
       const agente = await db.getAgente(userId);
       if (!agente) {
@@ -214,11 +215,12 @@ client.on('interactionCreate', async (interaction) => {
       
       const embed = {
         color: 0x0099ff,
-        title: `📋 Info Agente - ${agente.nome}`,
+        title: `📋 Info cartellino - ${agente.nome}`,
+        description: 'Dettaglio completo delle tue statistiche e dello stato servizio.',
         fields: [
           { name: 'Ore Cartellino', value: `\`${agente.oreServizio.toFixed(2)}h\``, inline: true },
           { name: 'Ore Totali', value: `\`${agente.oreTotali.toFixed(2)}h\``, inline: true },
-          { name: 'Stato', value: agente.inServizio ? '🟢 In Servizio' : '⚫ Fuori Servizio', inline: true },
+          { name: 'Stato', value: agente.inServizio ? '🟢 In servizio' : '⚫ Fuori servizio', inline: true },
           { name: 'PDA Emessi', value: `\`${agente.pdaEmessi}\``, inline: true },
           { name: 'Arresti', value: `\`${agente.arresti}\``, inline: true },
           { name: 'Multe', value: `\`${agente.multe}\``, inline: true },

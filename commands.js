@@ -237,12 +237,18 @@ const commands = {
       const embed = new EmbedBuilder()
         .setColor(0x0099ff)
         .setTitle('🚔 CARTELLINO FDO')
-        .setDescription('**CARTELLINO UFFICIALE FDO**\nUsa i bottoni qui sotto per timbrare il turno. Le statistiche agente si consultano solo tramite comandi e solo con il ruolo staff.')
+        .setDescription('**CARTELLINO UFFICIALE FDO**\nDi seguito i pulsanti e la loro funzione:')
+        .addFields([
+          { name: '🟢 Timbra ingresso', value: 'Registra l\'inizio del tuo turno (solo per chi preme).', inline: false },
+          { name: '🔴 Timbra uscita', value: 'Registra la fine del turno e aggiorna le ore lavorate.', inline: false },
+          { name: '📊 In Servizio', value: 'Mostra lo stato di servizio e la lista degli agenti in servizio (accessibile al proprietario del cartellino e allo staff).', inline: false },
+          { name: '📋 Info', value: 'Mostra le statistiche dettagliate dell\'agente (accessibile al proprietario del cartellino e allo staff).', inline: false }
+        ])
         .setFooter({ text: 'DEVELOPED BY LUPOMANNARO', iconURL: CARTELLINO_SMALL_IMAGE_URL || undefined });
       if (CARTELLINO_BANNER_URL) {
         embed.setImage(CARTELLINO_BANNER_URL);
       }
-      
+
       const row = new ActionRowBuilder()
         .addComponents(
           new ButtonBuilder()
@@ -254,7 +260,17 @@ const commands = {
             .setCustomId(`stimbra_${agenteId}`)
             .setLabel('Timbra uscita')
             .setStyle(ButtonStyle.Danger)
-            .setEmoji('🔴')
+            .setEmoji('🔴'),
+          new ButtonBuilder()
+            .setCustomId(`stato_${agenteId}`)
+            .setLabel('In Servizio')
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji('📊'),
+          new ButtonBuilder()
+            .setCustomId(`info_${agenteId}`)
+            .setLabel('Info')
+            .setStyle(ButtonStyle.Primary)
+            .setEmoji('📋')
         );
       
       // Invia il cartellino nel canale dedicato se configurato
