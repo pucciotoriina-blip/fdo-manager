@@ -2,6 +2,10 @@ const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Butt
 const db = require('./database');
 
 const HIDE_PULISCI_FEDINA = process.env.HIDE_PULISCI_FEDINA === 'true';
+const STAFF_ROLE = process.env.STAFF_ROLE || 'Staff LSPD';
+const PULISCI_FEDINA_ROLE = process.env.PULISCI_FEDINA_ROLE || 'Comandante';
+const CARTELLINO_BANNER_URL = process.env.CARTELLINO_BANNER_URL;
+const CARTELLINO_SMALL_IMAGE_URL = process.env.CARTELLINO_SMALL_IMAGE_URL;
 
 function getGuildEnv(key, guildId) {
   if (!guildId) return process.env[key];
@@ -72,10 +76,23 @@ function formatAge(eta) {
 }
 
 function calculateAge(dataNascitaStr) {
-  const parts = String(dataNascitaStr || '').trim().split('/').map(Number);
-  const giorno = Number.isFinite(parts[0]) ? parts[0] : 1;
-  const mese = Number.isFinite(parts[1]) ? parts[1] : 1;
-  const anno = Number.isFinite(parts[2]) ? parts[2] : 1970;
+  const cleaned = String(dataNascitaStr || '').trim().replace(/-/g, '/').replace(/\s+/g, '/');
+  const parts = cleaned.split('/').map(Number).filter(n => Number.isFinite(n));
+  let giorno = 1;
+  let mese = 1;
+  let anno = 1970;
+
+  if (parts.length === 3) {
+    giorno = parts[0];
+    mese = parts[1];
+    anno = parts[2];
+  } else if (parts.length === 2) {
+    giorno = parts[0];
+    mese = parts[1];
+  } else if (parts.length === 1) {
+    anno = parts[0];
+  }
+
   const dataNascita = new Date(anno, mese - 1, giorno);
   const oggi = new Date();
 
@@ -217,16 +234,18 @@ const commands = {
         agenteData = await db.getAgente(agenteId);
       }
       
-      const statoServizio = agenteData.inServizio ? '🟢 In servizio' : '⚫ Fuori servizio';
+      const statoServizio = agenteData.inServizio ? '🟢 IN SERVIZIO' : '⚫ FDO';
       const inizioTurno = agenteData.timbraInizio ? new Date(agenteData.timbraInizio).toLocaleString('it-IT') : '—';
 
       const embed = new EmbedBuilder()
         .setColor(0x0099ff)
-        .setTitle(`🚔 CARTELLINO LSPD - ${agenteData.nome}`)
-        .setDescription('**CARTELLINO UFFICIALE LSPD**\nUsa i comandi qui sotto per gestire il tuo turno e consultare le statistiche del servizio.')
-        .addFields([
-          { name: '👮 Agente', value: agenteData.nome, inline: true },
-          { name: '🆔 ID', value: `\`${agenteId}\``, inline: true },
+        .setTitle('🚔 CARTELLINO FDO')
+        .setDescription('**CARTELLINO UFFICIALE FDO**\nUsa i comandi qui sotto per gestire il tuo turno e consultare le statistiche del servizio.')
+        .setFooter({ text: 'DEVELOPED BY LUPOMANNARO', iconURL: CARTELLINO_SMALL_IMAGE_URL || undefined });
+      if (CARTELLINO_BANNER_URL) {
+        embed.setImage(CARTELLINO_BANNER_URL);
+      }
+      embed.addFields([
           { name: '📌 Stato', value: statoServizio, inline: true },
           { name: '⏱️ Inizio Turno', value: `\`${inizioTurno}\``, inline: true },
           { name: '🕒 Ore Cartellino', value: `\`${agenteData.oreServizio.toFixed(2)}h\``, inline: true },
@@ -235,30 +254,28 @@ const commands = {
           { name: '💰 Multe', value: `\`${agenteData.multe}\``, inline: true },
           { name: '🚗 Sequestri', value: `\`${agenteData.sequestri}\``, inline: true },
           { name: '🔫 PDA Emessi', value: `\`${agenteData.pdaEmessi}\``, inline: true }
-        ])
-        .setFooter({ text: `ID: ${agenteId} • LSPD Cartellino` })
-        .setTimestamp();
+        ]);
       
       const row = new ActionRowBuilder()
         .addComponents(
           new ButtonBuilder()
             .setCustomId(`timbra_${agenteId}`)
-            .setLabel('Timbra')
+            .setLabel('Timbra ingresso')
             .setStyle(ButtonStyle.Success)
             .setEmoji('🟢'),
           new ButtonBuilder()
             .setCustomId(`stimbra_${agenteId}`)
-            .setLabel('Stimbra')
+            .setLabel('Timbra uscita')
             .setStyle(ButtonStyle.Danger)
             .setEmoji('🔴'),
           new ButtonBuilder()
             .setCustomId(`stato_${agenteId}`)
-            .setLabel('In Servizio')
+            .setLabel('Stato servizio')
             .setStyle(ButtonStyle.Secondary)
             .setEmoji('📊'),
           new ButtonBuilder()
             .setCustomId(`info_${agenteId}`)
-            .setLabel('Info')
+            .setLabel('Info cartellino')
             .setStyle(ButtonStyle.Primary)
             .setEmoji('📋')
         );
@@ -270,7 +287,7 @@ const commands = {
           const channel = await interaction.client.channels.fetch(cartellinoChannelId);
           if (channel) {
             await channel.send({ embeds: [embed], components: [row] });
-            await interaction.reply({ content: `✅ Cartellino di ${agente.username} inviato al canale!`, ephemeral: true });
+            await interaction.reply({ content: '✅ Cartellino inviato al canale!', ephemeral: true });
           }
         } catch (error) {
           console.error('Errore nell\'invio del cartellino:', error);
@@ -479,6 +496,7 @@ const commands = {
         .setTitle(`🚔 ARRESTO REGISTRATO`)
         .setDescription(`**Arrestato:** ${nome} ${cognome}\n**Data Arresto:** ${arrestDate.toLocaleDateString('it-IT')} • ${arrestDate.toLocaleTimeString('it-IT')}`)
         .setImage(foto)
+        .setFooter({ text: 'DEVELOPED BY LUPOMANNARO' })
         .setFields([
           { name: '🆔 ID Arresto', value: `\`${arrestId}\``, inline: true },
           { name: '📅 Nascita', value: `\`${dataNascita}\``, inline: true },
