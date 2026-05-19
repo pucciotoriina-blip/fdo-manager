@@ -234,27 +234,14 @@ const commands = {
         agenteData = await db.getAgente(agenteId);
       }
       
-      const statoServizio = agenteData.inServizio ? '🟢 IN SERVIZIO' : '⚫ FDO';
-      const inizioTurno = agenteData.timbraInizio ? new Date(agenteData.timbraInizio).toLocaleString('it-IT') : '—';
-
       const embed = new EmbedBuilder()
         .setColor(0x0099ff)
         .setTitle('🚔 CARTELLINO FDO')
-        .setDescription('**CARTELLINO UFFICIALE FDO**\nUsa i comandi qui sotto per gestire il tuo turno e consultare le statistiche del servizio.')
+        .setDescription('**CARTELLINO UFFICIALE FDO**\nUsa i bottoni qui sotto per timbrare il turno. Le statistiche agente si consultano solo tramite comandi e solo con il ruolo staff.')
         .setFooter({ text: 'DEVELOPED BY LUPOMANNARO', iconURL: CARTELLINO_SMALL_IMAGE_URL || undefined });
       if (CARTELLINO_BANNER_URL) {
         embed.setImage(CARTELLINO_BANNER_URL);
       }
-      embed.addFields([
-          { name: '📌 Stato', value: statoServizio, inline: true },
-          { name: '⏱️ Inizio Turno', value: `\`${inizioTurno}\``, inline: true },
-          { name: '🕒 Ore Cartellino', value: `\`${agenteData.oreServizio.toFixed(2)}h\``, inline: true },
-          { name: '📊 Ore Totali', value: `\`${agenteData.oreTotali.toFixed(2)}h\``, inline: true },
-          { name: '🚔 Arresti', value: `\`${agenteData.arresti}\``, inline: true },
-          { name: '💰 Multe', value: `\`${agenteData.multe}\``, inline: true },
-          { name: '🚗 Sequestri', value: `\`${agenteData.sequestri}\``, inline: true },
-          { name: '🔫 PDA Emessi', value: `\`${agenteData.pdaEmessi}\``, inline: true }
-        ]);
       
       const row = new ActionRowBuilder()
         .addComponents(
@@ -267,17 +254,7 @@ const commands = {
             .setCustomId(`stimbra_${agenteId}`)
             .setLabel('Timbra uscita')
             .setStyle(ButtonStyle.Danger)
-            .setEmoji('🔴'),
-          new ButtonBuilder()
-            .setCustomId(`stato_${agenteId}`)
-            .setLabel('Stato servizio')
-            .setStyle(ButtonStyle.Secondary)
-            .setEmoji('📊'),
-          new ButtonBuilder()
-            .setCustomId(`info_${agenteId}`)
-            .setLabel('Info cartellino')
-            .setStyle(ButtonStyle.Primary)
-            .setEmoji('📋')
+            .setEmoji('🔴')
         );
       
       // Invia il cartellino nel canale dedicato se configurato

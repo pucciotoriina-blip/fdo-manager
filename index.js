@@ -177,6 +177,10 @@ client.on('interactionCreate', async (interaction) => {
     }
     
     if (action === 'stat') {
+      const staffRole = getGuildEnv('STAFF_ROLE', interaction.guildId) || 'Staff LSPD';
+      if (!hasRole(interaction.member, staffRole)) {
+        return interaction.reply({ content: '❌ Solo lo staff può visualizzare le statistiche.', ephemeral: true });
+      }
       const agente = await db.getAgente(userId);
       if (!agente) {
         return interaction.reply({ content: '⚠️ Nessun dato trovato!', ephemeral: true });
@@ -199,6 +203,10 @@ client.on('interactionCreate', async (interaction) => {
     }
     
     if (action === 'info') {
+      const staffRole = getGuildEnv('STAFF_ROLE', interaction.guildId) || 'Staff LSPD';
+      if (!hasRole(interaction.member, staffRole)) {
+        return interaction.reply({ content: '❌ Solo lo staff può visualizzare le info agente.', ephemeral: true });
+      }
       const agente = await db.getAgente(userId);
       if (!agente) {
         return interaction.reply({ content: '⚠️ Nessun dato trovato!', ephemeral: true });
