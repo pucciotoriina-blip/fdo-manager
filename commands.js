@@ -64,15 +64,28 @@ function parseMentions(mentionString) {
   return userIds;
 }
 
+function formatAge(eta) {
+  if (!eta || typeof eta.anni !== 'number' || typeof eta.mesi !== 'number') {
+    return '0 anni 0 mesi';
+  }
+  return `${eta.anni} anni ${eta.mesi} mesi`;
+}
+
 function calculateAge(dataNascitaStr) {
-  // Parsa la data nel formato GG/MM/YYYY
-  const [giorno, mese, anno] = dataNascitaStr.split('/').map(Number);
+  const parts = String(dataNascitaStr || '').trim().split('/').map(Number);
+  const giorno = Number.isFinite(parts[0]) ? parts[0] : 1;
+  const mese = Number.isFinite(parts[1]) ? parts[1] : 1;
+  const anno = Number.isFinite(parts[2]) ? parts[2] : 1970;
   const dataNascita = new Date(anno, mese - 1, giorno);
   const oggi = new Date();
-  
+
+  if (Number.isNaN(dataNascita.getTime())) {
+    return { anni: 0, mesi: 0 };
+  }
+
   let anni = oggi.getFullYear() - dataNascita.getFullYear();
   let mesi = oggi.getMonth() - dataNascita.getMonth();
-  
+
   if (oggi.getDate() < dataNascita.getDate()) {
     mesi -= 1;
   }
@@ -80,7 +93,7 @@ function calculateAge(dataNascitaStr) {
     anni -= 1;
     mesi += 12;
   }
-  
+
   return { anni, mesi };
 }
 
@@ -90,7 +103,7 @@ async function createInfoPersonaEmbed(persona) {
   const embed = new EmbedBuilder()
     .setColor(persona.fedina === 'pulita' ? 0x00ff00 : 0xff0000)
     .setTitle(`👤 ${persona.nome} ${persona.cognome}`)
-    .setDescription(`**Data di Nascita:** ${persona.dataNascita}\n**Età:** ${eta.anni} anni ${eta.mesi} mesi\n**Fedina:** ${persona.fedina === 'pulita' ? '✅ PULITA' : '🚨 SPORCA'}`)
+    .setDescription(`**Data di Nascita:** ${persona.dataNascita}\n**Età:** ${formatAge(eta)}\n**Fedina:** ${persona.fedina === 'pulita' ? '✅ PULITA' : '🚨 SPORCA'}`)
     .setFields([
       { name: '\u200b', value: '\u200b' }
     ]);
@@ -469,7 +482,7 @@ const commands = {
         .setFields([
           { name: '🆔 ID Arresto', value: `\`${arrestId}\``, inline: true },
           { name: '📅 Nascita', value: `\`${dataNascita}\``, inline: true },
-          { name: '🧬 Età', value: `\`${eta.anni} anni ${eta.mesi} mesi\``, inline: true },
+          { name: '🧬 Età', value: `\`${formatAge(eta)}\``, inline: true },
           { name: '💰 Multa', value: `\`€${multa.toFixed(2)}\``, inline: true },
           { name: '⚖️ Reati', value: `\`\`\`${reati}\`\`\``, inline: false },
           { name: '🔒 Sequestrati', value: `\`\`\`${oggettiSequestrati}\`\`\``, inline: false },
