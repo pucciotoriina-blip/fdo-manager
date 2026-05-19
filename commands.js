@@ -251,9 +251,10 @@ const commands = {
         );
       
       // Invia il cartellino nel canale dedicato se configurato
-      if (CARTELLINO_CHANNEL_ID) {
+      const cartellinoChannelId = getGuildEnv('CARTELLINO_CHANNEL_ID', interaction.guildId);
+      if (cartellinoChannelId) {
         try {
-          const channel = await interaction.client.channels.fetch(CARTELLINO_CHANNEL_ID);
+          const channel = await interaction.client.channels.fetch(cartellinoChannelId);
           if (channel) {
             await channel.send({ embeds: [embed], components: [row] });
             await interaction.reply({ content: `✅ Cartellino di ${agente.username} inviato al canale!`, ephemeral: true });
