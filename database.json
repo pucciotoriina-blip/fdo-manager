@@ -1,0 +1,14 @@
+{
+  "agenti": {},
+  "persone": {},
+  "arresti": {},
+  "denuncie": {},
+  "multe": {},
+  "sequestri": {},
+  "pda": {},
+  "nextArrestId": 1,
+  "nextDenunciaId": 1,
+  "nextMultaId": 1,
+  "nextSequestroId": 1,
+  "nextPdaId": 1
+}
